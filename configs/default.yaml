@@ -1,0 +1,128 @@
+# SarcasTone Configuration File
+# Optimized for Google Colab (T4 GPU - 16GB VRAM) with Google Drive Caching
+
+project:
+  name: SarcasTone
+  description: Multimodal Sarcasm Detection via Prosody-Gated Incongruity Network (PGIN)
+  seed: 42
+  deterministic: true
+
+# Google Drive and local paths
+paths:
+  # Base Google Drive root directory when running on Google Colab
+  drive_mount: /content/drive
+  drive_project_root: /content/drive/MyDrive/SarcasTone
+  
+  # Dataset storage (raw audio .wav, video .mp4, and annotations)
+  data_root: /content/drive/MyDrive/SarcasTone/data
+  
+  # Offline extracted features cache directory (.pt / .npz tensors)
+  cache_dir: /content/drive/MyDrive/SarcasTone/cache
+  
+  # Deterministic split registry to prevent cross-ablation leakage
+  splits_file: /content/drive/MyDrive/SarcasTone/cache/splits.json
+  
+  # Artifacts, checkpoints, metric logs, and comparison tables
+  results_dir: /content/drive/MyDrive/SarcasTone/results
+
+# Dataset configuration
+dataset:
+  name: mustard               # options: mustard, mustard_plus
+  annotation_file: null       # optional override; defaults to data_root/annotations.{json,csv}
+  utterance_dir: utterances_final  # directory containing utterance video clips (.mp4)
+  context_dir: context_final      # directory containing context video clips (<id>_c.mp4)
+  use_context: false          # whether to concatenate preceding dialogue context to utterance
+  train_ratio: 0.70           # stratified train split ratio
+  val_ratio: 0.15             # stratified validation split ratio
+  test_ratio: 0.15            # stratified test split ratio
+  speaker_disjoint: false     # whether to partition splits strictly across speakers
+
+# Pretrained Encoder Backbones
+encoders:
+  # Text Modality (HuggingFace backbone)
+  text_model: microsoft/deberta-v3-base
+  text_fallback_model: roberta-base
+  text_hidden_dim: 768
+  max_text_length: 128
+
+  # Speech Acoustic Modality (HuggingFace backbone)
+  audio_model: facebook/wav2vec2-base
+  audio_hidden_dim: 768
+  sample_rate: 16000
+  max_audio_sec: 15.0
+
+  # Video Modality (TorchVision backbone)
+  video_model: torchvision.models.resnet50
+  video_hidden_dim: 2048
+  num_video_frames: 8
+  frame_size: 224
+
+# Explicit Speech Prosody Extraction Parameters (librosa / scipy)
+prosody:
+  feature_dim: 16             # 16-dimensional summary vector
+  pitch:
+    fmin: 65.0                # Minimum pitch frequency for human voice (Hz)
+    fmax: 500.0               # Maximum pitch frequency for human voice (Hz)
+    method: yin               # YIN algorithm for robust fundamental frequency (F0) tracking
+  energy:
+    frame_length: 2048
+    hop_length: 512
+  pause:
+    silence_threshold_db: 35.0  # RMS energy decibel drop considered silent
+    min_pause_sec: 0.15
+  standardize: true           # Fit StandardScaler on train split only
+
+# PGIN Model Architecture & Incongruity Gating
+model:
+  latent_dim: 256             # Unified projection latent dimension d
+  prosody_dim: 16             # Explicit prosody input dimension
+  prosody_hidden_dim: 64      # Intermediate prosody MLP dimension
+  dropout: 0.3
+  classifier_dropout: 0.2
+  fusion_mode: pgin           # options: pgin (Prosody-Gated Incongruity), concat (Baseline)
+
+# Training Hyperparameters & T4 Optimizations
+training:
+  batch_size: 32
+  num_workers: 2              # Optimal for standard Colab dual-core CPU
+  epochs: 40
+  lr: 3.0e-4
+  weight_decay: 1.0e-2
+  patience: 8                 # Early stopping patience on validation macro F1-score
+  
+  # Mixed Precision on Colab T4 GPU
+  use_amp: true               # torch.amp.autocast for fp16 training
+  precision: fp16
+  grad_clip_norm: 1.0
+  
+  # Incongruity Loss Regularization
+  lambda_inc: 0.1             # Weight for polarity divergence margin loss
+  inc_margin: 0.5             # Margin delta for sarcastic utterances (|s_T - s_A| >= delta)
+
+# 8-Run Modality Ablation Matrix
+ablations:
+  runs:
+    - name: text_only
+      modalities: ["text"]
+      fusion_mode: pgin
+    - name: speech_only
+      modalities: ["speech"]
+      fusion_mode: pgin
+    - name: video_only
+      modalities: ["video"]
+      fusion_mode: pgin
+    - name: text_speech_concat
+      modalities: ["text", "speech"]
+      fusion_mode: concat
+    - name: text_speech_pgin
+      modalities: ["text", "speech"]
+      fusion_mode: pgin
+    - name: text_video
+      modalities: ["text", "video"]
+      fusion_mode: pgin
+    - name: speech_video
+      modalities: ["speech", "video"]
+      fusion_mode: pgin
+    - name: full_multimodal_pgin
+      modalities: ["text", "speech", "video"]
+      fusion_mode: pgin
