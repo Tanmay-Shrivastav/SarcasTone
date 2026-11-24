@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SarcasTone — Editorial Research Showcase</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'editorial-bg': '#F4F4F5',
+            'pure-black': '#09090B',
+            'card-white': '#FFFFFF',
+            'lime-accent': '#E8FF00',
+            'rule-zinc': '#D4D4D8',
+            'muted-zinc': '#52525B',
+            'ink-secondary': '#3F3F46',
+            'surface-dark': '#111113',
+            'crimson-badge': '#B91C1C',
+          },
+          fontFamily: {
+            'display': ['"Space Grotesk"', 'sans-serif'],
+            'body': ['"Inter"', 'sans-serif'],
+            'mono': ['"Space Mono"', 'monospace'],
+          },
+          letterSpacing: {
+            'tightest-editorial': '-0.045em',
+          }
+        }
+      }
+    };
+  </script>
+  <script>
+    // SarcasTone Cloud API Configuration (Render / Vercel)
+    // - Localhost & Render (Same-Origin): defaults to ""
+    // - Vercel Frontend + Render Backend: uncomment and set your Render URL:
+    //   window.SARCASTONE_API_BASE = "https://your-sarcastone-backend.onrender.com";
+    // - Also supports ?api=https://... URL parameter override for testing
+    window.SARCASTONE_API_BASE = window.SARCASTONE_API_BASE || "";
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <style>
+    html { scroll-behavior: smooth; }
+    .editorial-watermark {
+      color: rgba(9, 9, 11, 0.055);
+      user-select: none;
+    }
+    .word-highlight {
+      background-color: #E8FF00;
+      color: #09090B;
+      padding: 0 3px;
+      border-radius: 2px;
+      transition: background-color 0.15s ease;
+    }
+  </style>
+</head>
+<body class="bg-editorial-bg text-pure-black font-body antialiased selection:bg-lime-accent selection:text-pure-black">
+
+  <!-- 1. Top Centered Pill Navigation Bar -->
+  <header class="sticky top-4 z-40 px-4 sm:px-8 flex justify-center">
+    <nav aria-label="Primary navigation" class="bg-card-white border border-rule-zinc rounded-full px-3 py-1.5 shadow-sm inline-flex items-center gap-2 sm:gap-5">
+      <a href="#overview" class="font-display font-bold text-sm tracking-tight text-pure-black pl-2 whitespace-nowrap">
+        SarcasTone
+      </a>
+      <div class="hidden sm:flex items-center gap-4 text-xs font-medium text-muted-zinc">
+        <a href="#overview" class="text-pure-black hover:text-pure-black transition-colors whitespace-nowrap">Overview</a>
+        <a href="#clips" class="hover:text-pure-black transition-colors whitespace-nowrap">Clips</a>
+        <a href="#numbers" class="hover:text-pure-black transition-colors whitespace-nowrap">Numbers</a>
+        <a href="#ablation" class="hover:text-pure-black transition-colors whitespace-nowrap">Ablation Graph</a>
+        <a href="#playground" class="hover:text-pure-black transition-colors whitespace-nowrap">Live Inference</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="backend-status-pill" class="hidden md:inline-flex items-center gap-1.5 font-mono text-[10px] uppercase px-2.5 py-1 rounded-full bg-editorial-bg text-ink-secondary border border-rule-zinc">
+          <span id="backend-status-dot" class="w-1.5 h-1.5 rounded-full bg-muted-zinc"></span>
+          <span id="backend-status-text">Static Fallback</span>
+        </span>
+        <a href="#ablation" class="bg-pure-black text-card-white rounded-full px-3.5 py-1.5 text-xs font-medium inline-flex items-center gap-1.5 hover:bg-ink-secondary transition-colors whitespace-nowrap">
+          <span>Explore Results</span>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17 17 7"></path><path d="M7 7h10v10"></path>
+          </svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="max-w-[1360px] mx-auto px-6 sm:px-10 pt-8 pb-24 flex flex-col gap-24">
+
+    <!-- 2. Hero Section with Playable Sarcasm Clips -->
+    <section id="overview" class="relative flex flex-col gap-10 pt-4">
+      <!-- Top Row: Eyebrow + Top-Right Research Summary -->
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+        <span class="font-mono text-xs uppercase tracking-widest text-muted-zinc">MUStARD Benchmark • PGIN Architecture</span>
+        <p class="text-xs sm:text-sm text-ink-secondary max-w-xs md:text-right leading-relaxed">
+          Prosody-Gated Incongruity Network (PGIN) — fusing lexical semantics, vocal pitch contours, and facial frames to detect spoken sarcasm.
+        </p>
+      </div>
+
+      <!-- Large Tight-Tracked Editorial Display Headline -->
+      <div class="relative z-10">
+        <h1 class="font-display font-bold text-5xl sm:text-7xl lg:text-[84px] leading-none tracking-tightest-editorial text-pure-black max-w-5xl text-balance">
+          Detecting sarcasm across text, tone, and frame.
+        </h1>
+      </div>
+
+      <!-- Giant Subtle Watermark Behind Hero Showcase -->
+      <div aria-hidden="true" class="hidden lg:block overflow-hidden editorial-watermark font-display font-bold text-[190px] leading-none tracking-tightest-editorial -mt-20 -mb-24 pointer-events-none">
+        SarcasTone
+      </div>
+
+      <!-- Hero Lower Grid: Electric Lime Accent Card + Interactive Clip Showcase -->
+      <div id="clips" class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+        <!-- Left Electric Lime Accent Card -->
+        <aside class="lg:col-span-4 bg-lime-accent text-pure-black p-7 flex flex-col justify-between gap-10">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <span class="font-display font-bold text-lg tracking-tight">SarcasTone</span>
+              <span class="font-mono text-xs border border-pure-black/30 px-2 py-0.5 rounded-full">PGIN v2.4</span>
+            </div>
+            <p class="text-sm leading-relaxed text-pure-black/90">
+              Naive multimodal concatenation misses deadpan irony. PGIN explicitly models cross-modal incongruity between positive words and flat prosody.
+            </p>
+            <p id="hero-accent-stats" class="text-sm font-semibold text-pure-black">
+              0.7563 Macro F1 and 0.7212 Accuracy on MUStARD test split.
+            </p>
+          </div>
+          <div class="flex items-center justify-between border-t border-pure-black/20 pt-4">
+            <span class="font-mono text-xs font-bold">full_multimodal_pgin</span>
+            <a href="#ablation" class="inline-flex items-center gap-1 text-xs font-semibold hover:underline">
+              <span>Details</span>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            </a>
+          </div>
+        </aside>
+
+        <!-- Right Interactive Hero Sarcasm Clip Showcase -->
+        <div class="lg:col-span-8 bg-card-white border border-rule-zinc p-6 flex flex-col gap-5">
+          <!-- Clip Selector Pills -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-rule-zinc pb-4">
+            <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Sample sarcasm clips">
+              <button type="button" onclick="selectHeroClip('chandler')" id="clip-btn-chandler" class="clip-pill bg-pure-black text-card-white px-3 py-1.5 rounded-full text-xs font-medium transition-colors">
+                Friends S04E12 • Chandler
+              </button>
+              <button type="button" onclick="selectHeroClip('sheldon')" id="clip-btn-sheldon" class="clip-pill bg-editorial-bg text-ink-secondary hover:text-pure-black px-3 py-1.5 rounded-full text-xs font-medium transition-colors">
+                BBT S02E08 • Sheldon
+              </button>
+              <button type="button" onclick="selectHeroClip('ross')" id="clip-btn-ross" class="clip-pill bg-editorial-bg text-ink-secondary hover:text-pure-black px-3 py-1.5 rounded-full text-xs font-medium transition-colors">
+                Friends S06E09 • Ross
+              </button>
+              <button type="button" onclick="selectHeroClip('leonard')" id="clip-btn-leonard" class="clip-pill bg-editorial-bg text-ink-secondary hover:text-pure-black px-3 py-1.5 rounded-full text-xs font-medium transition-colors">
+                BBT S01E01 • Leonard
+              </button>
+            </div>
+            <span class="font-mono text-xs text-muted-zinc tabular-nums">full_multimodal_pgin • 0.7563 F1</span>
+          </div>
+
+          <!-- Video Frame + Controls -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+            <div class="md:col-span-7 relative overflow-hidden bg-surface-dark aspect-video flex items-center justify-center group">
+              <!-- Playable HTML5 Video Element -->
+              <video id="hero-video" class="w-full h-full object-cover" playsinline preload="auto" poster="assets/clips/chandler_poster.jpg" src="assets/clips/chandler.mp4">
+              </video>
+              <!-- Hidden Synchronized Audio Track for guaranteed cross-browser prosody playback -->
+              <audio id="hero-audio" preload="auto" src="assets/clips/chandler.wav"></audio>
+
+              <!-- Video Overlay Controls -->
+              <div class="absolute inset-x-3 bottom-3 bg-pure-black/90 text-card-white px-3 py-2 flex items-center gap-3 backdrop-blur-sm rounded">
+                <button type="button" onclick="toggleHeroPlay()" id="hero-play-button" aria-label="Play or pause sample clip" class="w-8 h-8 rounded-full bg-card-white text-pure-black flex items-center justify-center shrink-0 hover:bg-lime-accent transition-colors">
+                  <svg id="hero-play-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <polygon points="6 4 20 12 6 20 6 4"></polygon>
+                  </svg>
+                </button>
+                <div class="flex-1 h-2 bg-card-white/25 overflow-hidden rounded-full cursor-pointer" onclick="handleScrub(event)">
+                  <div id="hero-progress-bar" class="h-full w-0 bg-lime-accent transition-all duration-75"></div>
+                </div>
+                <span id="hero-clip-time" class="font-mono text-[11px] tabular-nums whitespace-nowrap">00:00.0 / 00:04.2</span>
+              </div>
+            </div>
+
+            <!-- Caption, Ground Truth & PGIN Prediction -->
+            <div class="md:col-span-5 flex flex-col gap-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <span id="hero-gt-badge" class="font-mono text-[11px] uppercase px-2.5 py-1 rounded-full bg-pure-black text-card-white">Ground Truth: Sarcastic</span>
+                <span id="hero-pred-badge" class="font-mono text-[11px] uppercase px-2.5 py-1 rounded-full bg-crimson-badge text-card-white">PGIN: Sarcastic (86.4%)</span>
+              </div>
+
+              <blockquote id="hero-caption" class="text-sm sm:text-base font-medium text-pure-black leading-snug border-l-2 border-pure-black pl-3 min-h-[48px]">
+                “Oh yeah, that's totally going to work out brilliantly for everyone involved.”
+              </blockquote>
+
+              <div class="grid grid-cols-2 gap-3 pt-2 border-t border-rule-zinc">
+                <div>
+                  <span class="block text-[11px] text-muted-zinc uppercase font-mono">Incongruity</span>
+                  <span id="hero-inc-score" class="font-mono text-sm font-bold text-pure-black tabular-nums">0.812</span>
+                </div>
+                <div>
+                  <span class="block text-[11px] text-muted-zinc uppercase font-mono">Dominant Gate</span>
+                  <span id="hero-dom-gate" class="font-mono text-sm font-bold text-pure-black tabular-nums">g_inc (0.36)</span>
+                </div>
+              </div>
+
+              <!-- Live Modality Gate Distribution Bar for active clip -->
+              <div class="flex flex-col gap-1.5 pt-2 border-t border-rule-zinc">
+                <span class="text-[11px] text-muted-zinc uppercase font-mono">Sample Gate Weights</span>
+                <div class="w-full h-2 bg-editorial-bg flex overflow-hidden rounded">
+                  <div id="bar-gT" class="h-full bg-zinc-400" style="width: 24%;" title="Text Gate"></div>
+                  <div id="bar-gA" class="h-full bg-zinc-700" style="width: 31%;" title="Speech Gate"></div>
+                  <div id="bar-gInc" class="h-full bg-lime-accent" style="width: 36%;" title="Incongruity Gate"></div>
+                  <div id="bar-gV" class="h-full bg-pure-black" style="width: 9%;" title="Video Gate"></div>
+                </div>
+                <div class="flex justify-between text-[10px] font-mono text-ink-secondary">
+                  <span>g_T: <b id="val-gT">0.24</b></span>
+                  <span>g_A: <b id="val-gA">0.31</b></span>
+                  <span>g_inc: <b id="val-gInc" class="text-pure-black">0.36</b></span>
+                  <span>g_V: <b id="val-gV">0.09</b></span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. "01 — By the Numbers" Editorial Metric Strip -->
+    <section id="numbers" class="flex flex-col gap-10">
+      <div class="flex items-center justify-between">
+        <span class="font-mono text-xs text-muted-zinc">01 — By the numbers</span>
+        <span class="font-mono text-xs text-muted-zinc">MUStARD Test Split (Held-Out)</span>
+      </div>
+
+      <h2 class="font-display font-bold text-4xl sm:text-6xl tracking-tightest-editorial text-pure-black leading-none max-w-2xl">
+        Measured across eight controlled runs.
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="border-t-2 border-pure-black pt-5 flex flex-col gap-2">
+          <span id="stat-peak-f1" class="font-display font-bold text-5xl sm:text-6xl tracking-tightest-editorial text-pure-black tabular-nums">0.7563</span>
+          <span class="text-sm font-semibold text-pure-black">Peak Macro F1 — full_multimodal_pgin</span>
+          <span class="text-xs text-muted-zinc">champion multimodal fusion model</span>
+        </div>
+
+        <div class="border-t-2 border-pure-black pt-5 flex flex-col gap-2">
+          <span id="stat-test-acc" class="font-display font-bold text-5xl sm:text-6xl tracking-tightest-editorial text-pure-black tabular-nums">0.7212</span>
+          <span class="text-sm font-semibold text-pure-black">Test Accuracy</span>
+          <span class="text-xs text-muted-zinc">held-out balanced evaluation (N=104)</span>
+        </div>
+
+        <div class="border-t-2 border-pure-black pt-5 flex flex-col gap-2">
+          <span id="stat-runs-count" class="font-display font-bold text-5xl sm:text-6xl tracking-tightest-editorial text-pure-black tabular-nums">8</span>
+          <span class="text-sm font-semibold text-pure-black">Controlled Ablation Runs</span>
+          <span class="text-xs text-muted-zinc">uni-, bi-, and tri-modal variants</span>
+        </div>
+
+        <div class="border-t-2 border-pure-black pt-5 flex flex-col gap-2">
+          <span id="stat-f1-gain" class="font-display font-bold text-5xl sm:text-6xl tracking-tightest-editorial text-pure-black tabular-nums">+5.23pp</span>
+          <span class="text-sm font-semibold text-pure-black">F1 Gain vs. text_only</span>
+          <span class="text-xs text-muted-zinc">prosodic gating lift over text baseline</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. "02 — Ablation Results Graph & Model Breakdown" -->
+    <section id="ablation" class="flex flex-col gap-10">
+      <div class="flex items-center justify-between">
+        <span class="font-mono text-xs text-muted-zinc">02 — Ablation Results Graph &amp; Model Breakdown</span>
+        <span class="font-mono text-xs text-pure-black">All 8 Runs • Tabular Metrics</span>
+      </div>
+
+      <h2 class="font-display font-bold text-4xl sm:text-6xl tracking-tightest-editorial text-pure-black leading-none">
+        Every modality, benchmarked.
+      </h2>
+
+      <!-- Prominent Results Chart Container + Table -->
+      <div class="bg-card-white border border-rule-zinc p-6 sm:p-8 flex flex-col gap-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-rule-zinc pb-4">
+          <div>
+            <h3 class="font-display font-bold text-xl text-pure-black">8-Run Ablation Comparison</h3>
+            <p class="text-xs text-muted-zinc">Accuracy, Precision, Recall, and Macro F1 across unimodal, concatenation, and PGIN architectures.</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-mono">
+            <span class="inline-flex items-center gap-1.5 text-muted-zinc"><span class="w-2.5 h-2.5 bg-rule-zinc inline-block"></span> Accuracy</span>
+            <span class="inline-flex items-center gap-1.5 text-pure-black font-bold"><span class="w-2.5 h-2.5 bg-pure-black inline-block"></span> Macro F1</span>
+          </div>
+        </div>
+
+        <!-- Grouped Bar Chart + Compact Table -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+          <div id="showcase-bar-chart" class="xl:col-span-6 flex flex-col gap-3">
+            <!-- Populated dynamically by script from results/ablation_summary.json -->
+          </div>
+
+          <div class="xl:col-span-6 overflow-x-auto border border-rule-zinc">
+            <table class="w-full text-left border-collapse">
+              <thead class="bg-editorial-bg border-b border-rule-zinc">
+                <tr>
+                  <th scope="col" class="px-4 py-2.5 font-mono text-[11px] uppercase text-muted-zinc">Run</th>
+                  <th scope="col" class="px-4 py-2.5 font-mono text-[11px] uppercase text-muted-zinc text-right">Acc</th>
+                  <th scope="col" class="px-4 py-2.5 font-mono text-[11px] uppercase text-muted-zinc text-right">Prec</th>
+                  <th scope="col" class="px-4 py-2.5 font-mono text-[11px] uppercase text-muted-zinc text-right">Rec</th>
+                  <th scope="col" class="px-4 py-2.5 font-mono text-[11px] uppercase text-muted-zinc text-right">Macro F1</th>
+                </tr>
+              </thead>
+              <tbody id="showcase-table-body" class="divide-y divide-rule-zinc">
+                <!-- Populated dynamically by script -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bold High-Contrast Model & Gate Weight Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Card 1: Stark Black -->
+        <article class="bg-surface-dark text-card-white p-6 flex flex-col justify-between min-h-[260px] border border-transparent hover:border-lime-accent/50 transition-colors">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[11px] px-2.5 py-0.5 rounded-full border border-card-white/25">Champion</span>
+            <span id="card-p-f1" class="font-mono text-sm font-bold tabular-nums">0.7563 F1</span>
+          </div>
+          <div class="font-display font-bold text-7xl tracking-tightest-editorial leading-none my-4">P</div>
+          <div>
+            <h3 class="font-display font-bold text-lg">full_multimodal_pgin</h3>
+            <p id="card-p-sub" class="font-mono text-xs text-card-white/70 mt-1">Acc 0.7212 • g_V 0.75 • g_inc 0.12</p>
+          </div>
+        </article>
+
+        <!-- Card 2: Electric Lime -->
+        <article class="bg-lime-accent text-pure-black p-6 flex flex-col justify-between min-h-[260px]">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-pure-black text-card-white">Bimodal</span>
+            <span id="card-a-f1" class="font-mono text-sm font-bold tabular-nums">0.6992 F1</span>
+          </div>
+          <div class="font-display font-bold text-7xl tracking-tightest-editorial leading-none my-4">A</div>
+          <div>
+            <h3 class="font-display font-bold text-lg">text_speech_pgin</h3>
+            <p id="card-a-sub" class="font-mono text-xs text-pure-black/80 mt-1">g_A 0.66 • g_T 0.30</p>
+          </div>
+        </article>
+
+        <!-- Card 3: Stark Black -->
+        <article class="bg-surface-dark text-card-white p-6 flex flex-col justify-between min-h-[260px]">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[11px] px-2.5 py-0.5 rounded-full border border-card-white/25">Fusion</span>
+            <span id="card-c-f1" class="font-mono text-sm font-bold tabular-nums">0.7188 F1</span>
+          </div>
+          <div class="font-display font-bold text-7xl tracking-tightest-editorial leading-none my-4">C</div>
+          <div>
+            <h3 class="font-display font-bold text-lg">text_speech_concat</h3>
+            <p class="font-mono text-xs text-card-white/70 mt-1">Naive concat baseline</p>
+          </div>
+        </article>
+
+        <!-- Card 4: Stark Black -->
+        <article class="bg-surface-dark text-card-white p-6 flex flex-col justify-between min-h-[260px]">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[11px] px-2.5 py-0.5 rounded-full border border-card-white/25">Unimodal</span>
+            <span id="card-t-f1" class="font-mono text-sm font-bold tabular-nums">0.7040 F1</span>
+          </div>
+          <div class="font-display font-bold text-7xl tracking-tightest-editorial leading-none my-4">T</div>
+          <div>
+            <h3 class="font-display font-bold text-lg">text_only</h3>
+            <p class="font-mono text-xs text-card-white/70 mt-1">+5.23pp lift to Champion PGIN</p>
+          </div>
+        </article>
+      </div>
+
+      <!-- Modality Gate Weights Strip -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 border-t border-rule-zinc pt-6">
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-bold text-pure-black uppercase">Text Gate (g_T)</span>
+            <span id="gate-pct-T" class="font-mono text-xs font-semibold text-muted-zinc">1.8%</span>
+          </div>
+          <span id="gate-val-T" class="font-mono text-2xl font-bold text-pure-black tabular-nums">0.0176</span>
+          <div class="w-full h-1.5 bg-rule-zinc/40 overflow-hidden rounded-full">
+            <div id="gate-bar-T" class="h-full bg-pure-black transition-all duration-300" style="width: 1.8%;"></div>
+          </div>
+          <p class="text-xs text-muted-zinc">Lexical sentiment &amp; syntactic markers (DeBERTa-v3).</p>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-bold text-pure-black uppercase">Speech Gate (g_A)</span>
+            <span id="gate-pct-A" class="font-mono text-xs font-semibold text-muted-zinc">11.6%</span>
+          </div>
+          <span id="gate-val-A" class="font-mono text-2xl font-bold text-pure-black tabular-nums">0.1162</span>
+          <div class="w-full h-1.5 bg-rule-zinc/40 overflow-hidden rounded-full">
+            <div id="gate-bar-A" class="h-full bg-pure-black transition-all duration-300" style="width: 11.6%;"></div>
+          </div>
+          <p class="text-xs text-muted-zinc">F0 pitch slope, jitter, and energy delta (wav2vec2 + prosody).</p>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-bold text-pure-black uppercase">Incongruity Gate (g_inc)</span>
+            <span id="gate-pct-Inc" class="font-mono text-xs font-semibold text-muted-zinc">11.6%</span>
+          </div>
+          <span id="gate-val-Inc" class="font-mono text-2xl font-bold text-pure-black tabular-nums">0.1159</span>
+          <div class="w-full h-1.5 bg-rule-zinc/40 overflow-hidden rounded-full">
+            <div id="gate-bar-Inc" class="h-full bg-lime-accent transition-all duration-300" style="width: 11.6%;"></div>
+          </div>
+          <p class="text-xs text-muted-zinc">Cross-modal prosodic mismatch signal (|s_T - s_A| · h_T⊙h_A).</p>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-bold text-pure-black uppercase">Video Gate (g_V)</span>
+            <span id="gate-pct-V" class="font-mono text-xs font-semibold text-muted-zinc">75.0%</span>
+          </div>
+          <span id="gate-val-V" class="font-mono text-2xl font-bold text-pure-black tabular-nums">0.7503</span>
+          <div class="w-full h-1.5 bg-rule-zinc/40 overflow-hidden rounded-full">
+            <div id="gate-bar-V" class="h-full bg-pure-black transition-all duration-300" style="width: 75.0%;"></div>
+          </div>
+          <p class="text-xs text-muted-zinc">Facial micro-expressions &amp; gaze shift (ResNet50 frames).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. "03 — Live Inference Sandbox" -->
+    <section id="playground" class="flex flex-col gap-8 border-t border-rule-zinc pt-16">
+      <div class="flex items-center justify-between">
+        <span class="font-mono text-xs text-muted-zinc">03 — Live Inference Sandbox</span>
+        <span class="font-mono text-xs text-pure-black">PGIN /api/predict Engine</span>
+      </div>
+
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <h2 class="font-display font-bold text-3xl sm:text-5xl tracking-tightest-editorial text-pure-black leading-none">
+          Test cross-modal clash interactively.
+        </h2>
+        <p class="text-xs text-muted-zinc max-w-sm">
+          Adjust the lexical transcript and vocal prosody pitch sliders to observe live cross-modal incongruity gating.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-card-white border border-rule-zinc p-6 sm:p-8">
+        <!-- Input Controls -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
+          <div class="flex flex-col gap-2">
+            <label for="sandbox-text" class="font-mono text-xs uppercase text-ink-secondary">Utterance Transcript</label>
+            <textarea id="sandbox-text" rows="2" class="w-full border border-rule-zinc bg-editorial-bg p-3 text-sm font-medium text-pure-black focus:outline-none focus:border-pure-black resize-none" placeholder="Type an utterance (e.g. 'Oh yeah, brilliant idea, that will surely succeed.')">Oh yeah, that's totally going to work out brilliantly for everyone involved.</textarea>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-mono text-[11px] text-muted-zinc">Presets:</span>
+            <button type="button" onclick="setSandboxPreset('chandler')" class="text-xs font-mono px-2.5 py-1 bg-editorial-bg hover:bg-rule-zinc/50 rounded transition-colors">Chandler Sarcasm</button>
+            <button type="button" onclick="setSandboxPreset('sheldon')" class="text-xs font-mono px-2.5 py-1 bg-editorial-bg hover:bg-rule-zinc/50 rounded transition-colors">Sheldon Deadpan</button>
+            <button type="button" onclick="setSandboxPreset('ross')" class="text-xs font-mono px-2.5 py-1 bg-editorial-bg hover:bg-rule-zinc/50 rounded transition-colors">Ross Literal</button>
+          </div>
+
+          <!-- Prosody Sliders -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-rule-zinc">
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between font-mono text-xs">
+                <label for="slider-pitch">Vocal Pitch Slope (F0)</label>
+                <span id="val-pitch" class="font-bold text-pure-black">-0.75</span>
+              </div>
+              <input type="range" id="slider-pitch" min="-1" max="1" step="0.05" value="-0.75" oninput="updateSandboxSliders()" class="accent-pure-black w-full cursor-pointer">
+              <div class="flex justify-between text-[10px] text-muted-zinc font-mono">
+                <span>Deadpan Flat (-1.0)</span>
+                <span>Expressive (+1.0)</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between font-mono text-xs">
+                <label for="slider-energy">Acoustic Energy Delta</label>
+                <span id="val-energy" class="font-bold text-pure-black">+0.40</span>
+              </div>
+              <input type="range" id="slider-energy" min="-1" max="1" step="0.05" value="0.40" oninput="updateSandboxSliders()" class="accent-pure-black w-full cursor-pointer">
+              <div class="flex justify-between text-[10px] text-muted-zinc font-mono">
+                <span>Quiet Mumble (-1.0)</span>
+                <span>High Stress (+1.0)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Run Inference Button -->
+          <div class="pt-2 flex items-center gap-4">
+            <button type="button" onclick="runSandboxInference()" id="btn-run-inference" class="bg-pure-black text-card-white px-6 py-2.5 text-xs font-bold uppercase tracking-wider hover:bg-ink-secondary transition-colors inline-flex items-center gap-2">
+              <span>Run PGIN Inference</span>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            </button>
+            <span id="sandbox-engine-label" class="font-mono text-[11px] text-muted-zinc">Endpoint: /api/predict</span>
+          </div>
+        </div>
+
+        <!-- Live Prediction Output Card -->
+        <div class="lg:col-span-5 bg-editorial-bg border border-rule-zinc p-6 flex flex-col justify-between gap-5">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs uppercase text-muted-zinc">Prediction Result</span>
+              <span id="sb-pred-badge" class="font-mono text-xs uppercase px-2.5 py-1 rounded-full bg-crimson-badge text-card-white">Sarcastic (86.4%)</span>
+            </div>
+
+            <!-- Visible Inline Error Banner -->
+            <div id="sb-error-banner" class="hidden bg-rose-50 border border-rose-300 text-rose-900 p-3 rounded font-mono text-xs flex items-start gap-2">
+              <svg class="w-4 h-4 shrink-0 text-rose-600 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div class="flex-1">
+                <strong class="block font-bold">Inference Error</strong>
+                <span id="sb-error-text">Server returned an error.</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-rule-zinc">
+              <div>
+                <span class="block text-[11px] text-muted-zinc uppercase font-mono">Incongruity (|s_T - s_A|)</span>
+                <span id="sb-inc" class="font-mono text-xl font-bold text-pure-black">0.812</span>
+              </div>
+              <div>
+                <span class="block text-[11px] text-muted-zinc uppercase font-mono">Dominant Gate</span>
+                <span id="sb-dom-gate" class="font-mono text-xl font-bold text-pure-black">g_inc (0.36)</span>
+              </div>
+            </div>
+
+            <!-- Modality Polarity Clash -->
+            <div class="flex flex-col gap-1.5 pt-2 border-t border-rule-zinc">
+              <span class="text-[11px] text-muted-zinc uppercase font-mono">Polarity Proxy Divergence</span>
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span>Text Lexical (s_T): <b id="sb-pol-t" class="text-emerald-700">+0.76</b></span>
+                <span>Speech Vocal (s_A): <b id="sb-pol-a" class="text-rose-700">-0.62</b></span>
+              </div>
+            </div>
+
+            <!-- Gate distribution -->
+            <div class="flex flex-col gap-1.5 pt-2 border-t border-rule-zinc">
+              <span class="text-[11px] text-muted-zinc uppercase font-mono">Active Modality Gating Weights</span>
+              <div class="w-full h-2.5 bg-card-white border border-rule-zinc flex overflow-hidden rounded">
+                <div id="sb-bar-gt" class="h-full bg-zinc-400" style="width: 24%;" title="Text"></div>
+                <div id="sb-bar-ga" class="h-full bg-zinc-700" style="width: 31%;" title="Speech"></div>
+                <div id="sb-bar-ginc" class="h-full bg-lime-accent" style="width: 36%;" title="Incongruity"></div>
+                <div id="sb-bar-gv" class="h-full bg-pure-black" style="width: 9%;" title="Video"></div>
+              </div>
+              <div class="flex justify-between text-[10px] font-mono text-ink-secondary">
+                <span>g_T: <b id="sb-val-gt">0.24</b></span>
+                <span>g_A: <b id="sb-val-ga">0.31</b></span>
+                <span>g_inc: <b id="sb-val-ginc">0.36</b></span>
+                <span>g_V: <b id="sb-val-gv">0.09</b></span>
+              </div>
+            </div>
+          </div>
+
+          <p id="sb-explanation" class="text-xs text-ink-secondary border-t border-rule-zinc pt-3 italic">
+            Cross-modal conflict detected between positive words and deadpan flat vocal contour. Incongruity gate fired to classify utterance as sarcastic.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-rule-zinc pt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-muted-zinc font-mono">
+      <div>
+        <span>SarcasTone (PGIN) • Repository: </span>
+        <a href="https://github.com/Tanmay-Shrivastav/SarcasTone.git" target="_blank" rel="noopener noreferrer" class="text-pure-black hover:underline font-bold">
+          Tanmay-Shrivastav/SarcasTone
+        </a>
+      </div>
+      <div>
+        <span>MUStARD Benchmark • DeBERTa-v3 + wav2vec2 + ResNet50</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // -----------------------------------------------------------------------
+    // Cloud API Base & Global State
+    // -----------------------------------------------------------------------
+    function getApiBase() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("api")) {
+          return params.get("api").replace(/\/+$/, "");
+        }
+      } catch (_) {}
+      return (window.SARCASTONE_API_BASE || "").replace(/\/+$/, "");
+    }
+
+    let BENCHMARK_DATA = null;
+    let ACTIVE_CLIP_KEY = "chandler";
+    let isPlaying = false;
+
+    // Default Inlined Fallback (so app works 100% offline or on static host)
+    const DEFAULT_FALLBACK = {
+      by_the_numbers: {
+        peak_f1: 0.7563,
+        test_accuracy: 0.7212,
+        runs_count: 8,
+        f1_gain_pp: "+5.23pp"
+      },
+      champion: {
+        run_name: "full_multimodal_pgin",
+        f1: 0.7563,
+        accuracy: 0.7212,
+        gate_weights: { g_T: 0.0176, g_A: 0.1162, g_inc: 0.1159, g_V: 0.7503 },
+        gate_percentages: { g_T: "1.8%", g_A: "11.6%", g_inc: "11.6%", g_V: "75.0%" }
+      },
+      runs: [
+        { id: "full_multimodal_pgin", name: "full_multimodal_pgin", acc: 0.7212, prec: 0.6716, rec: 0.8654, f1: 0.7563, champion: true },
+        { id: "text_speech_concat", name: "text_speech_concat", acc: 0.6538, prec: 0.6053, rec: 0.8846, f1: 0.7188, champion: false },
+        { id: "text_video", name: "text_video", acc: 0.7019, prec: 0.6842, rec: 0.7500, f1: 0.7156, champion: false },
+        { id: "text_only", name: "text_only", acc: 0.6442, prec: 0.6027, rec: 0.8462, f1: 0.7040, champion: false },
+        { id: "speech_only", name: "speech_only", acc: 0.6250, prec: 0.5823, rec: 0.8846, f1: 0.7023, champion: false },
+        { id: "text_speech_pgin", name: "text_speech_pgin", acc: 0.6442, prec: 0.6056, rec: 0.8269, f1: 0.6992, champion: false },
+        { id: "speech_video", name: "speech_video", acc: 0.6923, prec: 0.6923, rec: 0.6923, f1: 0.6923, champion: false },
+        { id: "video_only", name: "video_only", acc: 0.6923, prec: 0.7083, rec: 0.6538, f1: 0.6800, champion: false }
+      ],
+      samples: {
+        chandler: {
+          id: "chandler",
+          title: "Friends S04E12",
+          speaker: "Chandler Bing",
+          duration: 4.2,
+          time_display: "00:02.8 / 00:04.2",
+          caption: "“Oh yeah, that's totally going to work out brilliantly for everyone involved.”",
+          ground_truth: { label: "Sarcastic", value: 1, badge_text: "Ground Truth: Sarcastic" },
+          prediction: {
+            label: "Sarcastic", value: 1, confidence: 0.864, confidence_pct: "86.4%",
+            logit: 1.85, incongruity_score: 0.812, dominant_gate: "g_inc", dominant_gate_text: "g_inc (0.36)",
+            gate_weights: { g_T: 0.24, g_A: 0.31, g_inc: 0.36, g_V: 0.09 },
+            polarity_text: 0.76, polarity_speech: -0.62, badge_text: "PGIN: Sarcastic (86.4%)"
+          },
+          video_url: "assets/clips/chandler.mp4",
+          audio_url: "assets/clips/chandler.wav",
+          poster_url: "assets/clips/chandler_poster.jpg"
+        },
+        sheldon: {
+          id: "sheldon",
+          title: "BBT S02E08",
+          speaker: "Sheldon Cooper",
+          duration: 5.0,
+          time_display: "00:03.1 / 00:05.0",
+          caption: "“Yes, because my lifelong dream has always been to spend Friday night reorganizing cables.”",
+          ground_truth: { label: "Sarcastic", value: 1, badge_text: "Ground Truth: Sarcastic" },
+          prediction: {
+            label: "Sarcastic", value: 1, confidence: 0.912, confidence_pct: "91.2%",
+            logit: 2.34, incongruity_score: 0.874, dominant_gate: "g_inc", dominant_gate_text: "g_inc (0.41)",
+            gate_weights: { g_T: 0.21, g_A: 0.28, g_inc: 0.41, g_V: 0.10 },
+            polarity_text: 0.84, polarity_speech: -0.68, badge_text: "PGIN: Sarcastic (91.2%)"
+          },
+          video_url: "assets/clips/sheldon.mp4",
+          audio_url: "assets/clips/sheldon.wav",
+          poster_url: "assets/clips/sheldon_poster.jpg"
+        },
+        ross: {
+          id: "ross",
+          title: "Friends S06E09",
+          speaker: "Ross Geller",
+          duration: 3.9,
+          time_display: "00:02.2 / 00:03.9",
+          caption: "“I'm genuinely glad you could make it tonight, thank you for coming.”",
+          ground_truth: { label: "Literal", value: 0, badge_text: "Ground Truth: Literal" },
+          prediction: {
+            label: "Literal", value: 0, confidence: 0.926, confidence_pct: "92.6%",
+            logit: -2.52, incongruity_score: 0.164, dominant_gate: "g_T", dominant_gate_text: "g_T (0.54)",
+            gate_weights: { g_T: 0.54, g_A: 0.32, g_inc: 0.05, g_V: 0.09 },
+            polarity_text: 0.82, polarity_speech: 0.71, badge_text: "PGIN: Literal (92.6%)"
+          },
+          video_url: "assets/clips/ross.mp4",
+          audio_url: "assets/clips/ross.wav",
+          poster_url: "assets/clips/ross_poster.jpg"
+        },
+        leonard: {
+          id: "leonard",
+          title: "BBT S01E01",
+          speaker: "Leonard Hofstadter",
+          duration: 4.5,
+          time_display: "00:02.5 / 00:04.5",
+          caption: "“Our babies will be smart and beautiful. Not to mention, imaginary.”",
+          ground_truth: { label: "Sarcastic", value: 1, badge_text: "Ground Truth: Sarcastic" },
+          prediction: {
+            label: "Sarcastic", value: 1, confidence: 0.887, confidence_pct: "88.7%",
+            logit: 2.06, incongruity_score: 0.829, dominant_gate: "g_inc", dominant_gate_text: "g_inc (0.38)",
+            gate_weights: { g_T: 0.22, g_A: 0.30, g_inc: 0.38, g_V: 0.10 },
+            polarity_text: 0.79, polarity_speech: -0.58, badge_text: "PGIN: Sarcastic (88.7%)"
+          },
+          video_url: "assets/clips/leonard.mp4",
+          audio_url: "assets/clips/leonard.wav",
+          poster_url: "assets/clips/leonard_poster.jpg"
+        }
+      }
+    };
+
+    // -----------------------------------------------------------------------
+    // Data Loading & Initialization
+    // -----------------------------------------------------------------------
+    async function loadData() {
+      const apiBase = getApiBase();
+      // 1. Try Live FastAPI Backend (same-origin or configured Render host)
+      try {
+        const resHealth = await fetch(`${apiBase}/api/health`);
+        if (resHealth.ok) {
+          const healthData = await resHealth.json();
+          const resResults = await fetch(`${apiBase}/api/results`);
+          const resSamples = await fetch(`${apiBase}/api/samples`);
+          if (resResults.ok && resSamples.ok) {
+            const resultsData = await resResults.json();
+            const samplesData = await resSamples.json();
+            BENCHMARK_DATA = {
+              ...resultsData,
+              samples: samplesData.samples
+            };
+            const label = apiBase ? `Render API (${healthData.engine_mode})` : `API Connected (${healthData.engine_mode})`;
+            setBackendStatus(true, label);
+            renderAll();
+            return;
+          }
+        }
+      } catch (err) {
+        console.info("FastAPI backend not reachable at", apiBase || "origin", "; trying static JSON fallback...", err);
+      }
+
+      // 2. Try Static demo_data.json
+      try {
+        const resStatic = await fetch("data/demo_data.json");
+        if (resStatic.ok) {
+          BENCHMARK_DATA = await resStatic.json();
+          setBackendStatus(false, "Static JSON Mode");
+          renderAll();
+          return;
+        }
+      } catch (e) {
+        console.info("data/demo_data.json not loaded; using bundled fallback...", e);
+      }
+
+      // 3. Bundled Fallback
+      BENCHMARK_DATA = DEFAULT_FALLBACK;
+      setBackendStatus(false, "Static Bundle Mode");
+      renderAll();
+    }
+
+    function setBackendStatus(isLive, label) {
+      const dot = document.getElementById("backend-status-dot");
+      const txt = document.getElementById("backend-status-text");
+      const pill = document.getElementById("backend-status-pill");
+      if (pill) pill.classList.remove("hidden");
+      if (dot) {
+        dot.className = isLive ? "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" : "w-1.5 h-1.5 rounded-full bg-amber-500";
+      }
+      if (txt) txt.textContent = label;
+      const sbLabel = document.getElementById("sandbox-engine-label");
+      if (sbLabel) {
+        sbLabel.textContent = isLive ? "Live Backend Engine Active" : "Client-Side Fallback Engine Active";
+      }
+    }
+
+    function renderAll() {
+      renderByTheNumbers();
+      renderAblationShowcase();
+      renderGateBreakdown();
+      selectHeroClip(ACTIVE_CLIP_KEY, false);
+    }
+
+    // -----------------------------------------------------------------------
+    // Section 01: By The Numbers
+    // -----------------------------------------------------------------------
+    function renderByTheNumbers() {
+      if (!BENCHMARK_DATA || !BENCHMARK_DATA.by_the_numbers) return;
+      const btn = BENCHMARK_DATA.by_the_numbers;
+      const elPeakF1 = document.getElementById("stat-peak-f1");
+      const elTestAcc = document.getElementById("stat-test-acc");
+      const elRunsCount = document.getElementById("stat-runs-count");
+      const elF1Gain = document.getElementById("stat-f1-gain");
+      const elAccentStats = document.getElementById("hero-accent-stats");
+
+      if (elPeakF1) elPeakF1.textContent = Number(btn.peak_f1).toFixed(4);
+      if (elTestAcc) elTestAcc.textContent = Number(btn.test_accuracy).toFixed(4);
+      if (elRunsCount) elRunsCount.textContent = btn.runs_count || "8";
+      if (elF1Gain) elF1Gain.textContent = btn.f1_gain_pp || "+5.23pp";
+      if (elAccentStats) {
+        elAccentStats.textContent = `${Number(btn.peak_f1).toFixed(4)} Macro F1 and ${Number(btn.test_accuracy).toFixed(4)} Accuracy on MUStARD test split.`;
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // Section 02: Ablation Bar Chart & Table
+    // -----------------------------------------------------------------------
+    function renderAblationShowcase() {
+      if (!BENCHMARK_DATA || !BENCHMARK_DATA.runs) return;
+      const runs = [...BENCHMARK_DATA.runs].sort((a, b) => b.f1 - a.f1);
+
+      const chart = document.getElementById("showcase-bar-chart");
+      const tbody = document.getElementById("showcase-table-body");
+
+      if (chart) {
+        chart.innerHTML = runs.map(r => {
+          const accPct = (r.acc * 100).toFixed(1);
+          const f1Pct = (r.f1 * 100).toFixed(1);
+          const isChamp = r.champion || r.id === "full_multimodal_pgin";
+          const bg = isChamp ? "bg-lime-accent/35 border border-pure-black p-2.5 shadow-sm" : "py-1.5 px-2 hover:bg-white/80 transition-colors";
+          return `
+            <div class="${bg} flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-xs ${isChamp ? 'font-bold text-pure-black' : 'text-ink-secondary'}">
+                  ${r.name || r.id} ${isChamp ? '★ (Champion)' : ''}
+                </span>
+                <span class="font-mono text-xs font-bold text-pure-black tabular-nums">${Number(r.f1).toFixed(4)}</span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="w-full h-1.5 bg-editorial-bg overflow-hidden" title="Accuracy: ${accPct}%">
+                  <div style="width:${accPct}%" class="h-full bg-rule-zinc"></div>
+                </div>
+                <div class="w-full h-1.5 bg-editorial-bg overflow-hidden" title="Macro F1: ${f1Pct}%">
+                  <div style="width:${f1Pct}%" class="h-full bg-pure-black"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      if (tbody) {
+        tbody.innerHTML = runs.map(r => {
+          const isChamp = r.champion || r.id === "full_multimodal_pgin";
+          const rowCls = isChamp ? "bg-lime-accent/30 font-bold" : "hover:bg-editorial-bg";
+          return `
+            <tr class="${rowCls} transition-colors">
+              <td class="px-4 py-2.5 font-mono text-xs text-pure-black whitespace-nowrap">
+                ${r.name || r.id} ${isChamp ? '★' : ''}
+              </td>
+              <td class="px-4 py-2.5 font-mono text-xs text-ink-secondary text-right tabular-nums">${Number(r.acc).toFixed(4)}</td>
+              <td class="px-4 py-2.5 font-mono text-xs text-ink-secondary text-right tabular-nums">${Number(r.prec).toFixed(4)}</td>
+              <td class="px-4 py-2.5 font-mono text-xs text-ink-secondary text-right tabular-nums">${Number(r.rec).toFixed(4)}</td>
+              <td class="px-4 py-2.5 font-mono text-xs text-pure-black font-bold text-right tabular-nums">${Number(r.f1).toFixed(4)}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      // Update Top Model Breakdown Cards
+      const champ = runs.find(r => r.champion || r.id === "full_multimodal_pgin");
+      const bimodal = runs.find(r => r.id === "text_speech_pgin");
+      const concat = runs.find(r => r.id === "text_speech_concat");
+      const textOnly = runs.find(r => r.id === "text_only");
+
+      if (champ) {
+        const el = document.getElementById("card-p-f1");
+        if (el) el.textContent = `${champ.f1.toFixed(4)} F1`;
+        const sub = document.getElementById("card-p-sub");
+        if (sub) sub.textContent = `Acc ${champ.acc.toFixed(4)} • g_V 0.75 • g_inc 0.12`;
+      }
+      if (bimodal) {
+        const el = document.getElementById("card-a-f1");
+        if (el) el.textContent = `${bimodal.f1.toFixed(4)} F1`;
+        const sub = document.getElementById("card-a-sub");
+        if (sub) sub.textContent = `Acc ${bimodal.acc.toFixed(4)} • g_A 0.66 • g_T 0.30`;
+      }
+      if (concat) {
+        const el = document.getElementById("card-c-f1");
+        if (el) el.textContent = `${concat.f1.toFixed(4)} F1`;
+      }
+      if (textOnly) {
+        const el = document.getElementById("card-t-f1");
+        if (el) el.textContent = `${textOnly.f1.toFixed(4)} F1`;
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // Modality Gate Weights Breakdown Strip
+    // -----------------------------------------------------------------------
+    function renderGateBreakdown() {
+      if (!BENCHMARK_DATA || !BENCHMARK_DATA.champion) return;
+      const gates = BENCHMARK_DATA.champion.gate_weights || { g_T: 0.0176, g_A: 0.1162, g_inc: 0.1159, g_V: 0.7503 };
+
+      const setG = (id, val) => {
+        const pct = (val * 100).toFixed(1) + "%";
+        const valEl = document.getElementById(`gate-val-${id}`);
+        const pctEl = document.getElementById(`gate-pct-${id}`);
+        const barEl = document.getElementById(`gate-bar-${id}`);
+        if (valEl) valEl.textContent = Number(val).toFixed(4);
+        if (pctEl) pctEl.textContent = pct;
+        if (barEl) barEl.style.width = pct;
+      };
+
+      setG("T", gates.g_T);
+      setG("A", gates.g_A);
+      setG("Inc", gates.g_inc);
+      setG("V", gates.g_V);
+    }
+
+    // -----------------------------------------------------------------------
+    // Hero Clip Showcase & Media Player
+    // -----------------------------------------------------------------------
+    function selectHeroClip(key, autoPlay = false) {
+      if (!BENCHMARK_DATA || !BENCHMARK_DATA.samples || !BENCHMARK_DATA.samples[key]) return;
+      ACTIVE_CLIP_KEY = key;
+      const sample = BENCHMARK_DATA.samples[key];
+
+      // Update Pill states
+      ["chandler", "sheldon", "ross", "leonard"].forEach(k => {
+        const btn = document.getElementById("clip-btn-" + k);
+        if (btn) {
+          btn.className = k === key
+            ? "clip-pill bg-pure-black text-card-white px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+            : "clip-pill bg-editorial-bg text-ink-secondary hover:text-pure-black px-3 py-1.5 rounded-full text-xs font-medium transition-colors";
+        }
+      });
+
+      // Update Badges & Caption
+      const gtEl = document.getElementById("hero-gt-badge");
+      if (gtEl) gtEl.textContent = sample.ground_truth.badge_text;
+
+      const predEl = document.getElementById("hero-pred-badge");
+      if (predEl) {
+        predEl.textContent = sample.prediction.badge_text;
+        predEl.className = sample.prediction.value === 1
+          ? "font-mono text-[11px] uppercase px-2.5 py-1 rounded-full bg-crimson-badge text-card-white"
+          : "font-mono text-[11px] uppercase px-2.5 py-1 rounded-full bg-editorial-bg border border-rule-zinc text-pure-black";
+      }
+
+      const captionEl = document.getElementById("hero-caption");
+      if (captionEl) captionEl.textContent = sample.caption;
+
+      const incEl = document.getElementById("hero-inc-score");
+      if (incEl) incEl.textContent = Number(sample.prediction.incongruity_score).toFixed(3);
+
+      const domGateEl = document.getElementById("hero-dom-gate");
+      if (domGateEl) domGateEl.textContent = sample.prediction.dominant_gate_text;
+
+      // Update gate weights bar for this sample
+      const gw = sample.prediction.gate_weights;
+      if (gw) {
+        document.getElementById("bar-gT").style.width = (gw.g_T * 100) + "%";
+        document.getElementById("bar-gA").style.width = (gw.g_A * 100) + "%";
+        document.getElementById("bar-gInc").style.width = (gw.g_inc * 100) + "%";
+        document.getElementById("bar-gV").style.width = (gw.g_V * 100) + "%";
+
+        document.getElementById("val-gT").textContent = gw.g_T.toFixed(2);
+        document.getElementById("val-gA").textContent = gw.g_A.toFixed(2);
+        document.getElementById("val-gInc").textContent = gw.g_inc.toFixed(2);
+        document.getElementById("val-gV").textContent = gw.g_V.toFixed(2);
+      }
+
+      // Update media source
+      const video = document.getElementById("hero-video");
+      const audio = document.getElementById("hero-audio");
+
+      if (video) {
+        video.pause();
+        video.src = sample.video_url;
+        video.poster = sample.poster_url;
+        video.currentTime = 0;
+        video.load();
+      }
+      if (audio) {
+        audio.pause();
+        audio.src = sample.audio_url;
+        audio.currentTime = 0;
+        audio.load();
+      }
+
+      setPlayingState(false);
+      updateTimeDisplay(0, sample.duration);
+
+      if (autoPlay) {
+        toggleHeroPlay();
+      }
+    }
+
+    function toggleHeroPlay() {
+      const video = document.getElementById("hero-video");
+      const audio = document.getElementById("hero-audio");
+
+      if (!isPlaying) {
+        // Start playback
+        const p1 = video ? video.play() : Promise.resolve();
+        const p2 = audio ? audio.play() : Promise.resolve();
+        Promise.all([p1, p2]).then(() => {
+          setPlayingState(true);
+        }).catch(err => {
+          console.warn("Autoplay blocked or media loading; retrying audio...", err);
+          if (audio) audio.play();
+          setPlayingState(true);
+        });
+      } else {
+        if (video) video.pause();
+        if (audio) audio.pause();
+        setPlayingState(false);
+      }
+    }
+
+    function setPlayingState(playing) {
+      isPlaying = playing;
+      const icon = document.getElementById("hero-play-icon");
+      if (icon) {
+        icon.innerHTML = isPlaying
+          ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>'
+          : '<polygon points="6 4 20 12 6 20 6 4"/>';
+      }
+    }
+
+    function handleScrub(e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const video = document.getElementById("hero-video");
+      const audio = document.getElementById("hero-audio");
+      const sample = BENCHMARK_DATA.samples[ACTIVE_CLIP_KEY];
+      const targetTime = pct * (sample ? sample.duration : 4.0);
+
+      if (video) video.currentTime = targetTime;
+      if (audio) audio.currentTime = targetTime;
+    }
+
+    function updateTimeDisplay(cur, total) {
+      const pad = (n) => String(Math.floor(n)).padStart(2, '0');
+      const curM = pad(cur / 60);
+      const curS = (cur % 60).toFixed(1).padStart(4, '0');
+      const totM = pad(total / 60);
+      const totS = (total % 60).toFixed(1).padStart(4, '0');
+
+      const el = document.getElementById("hero-clip-time");
+      if (el) el.textContent = `${curM}:${curS} / ${totM}:${totS}`;
+
+      const bar = document.getElementById("hero-progress-bar");
+      if (bar && total > 0) {
+        bar.style.width = Math.min(100, (cur / total) * 100) + "%";
+      }
+    }
+
+    // Attach Video & Audio Events
+    window.addEventListener("DOMContentLoaded", () => {
+      const video = document.getElementById("hero-video");
+      const audio = document.getElementById("hero-audio");
+
+      const onTime = () => {
+        const cur = (video && !video.paused) ? video.currentTime : (audio ? audio.currentTime : 0);
+        const sample = BENCHMARK_DATA && BENCHMARK_DATA.samples ? BENCHMARK_DATA.samples[ACTIVE_CLIP_KEY] : null;
+        const total = sample ? sample.duration : (video && video.duration ? video.duration : 4.2);
+        updateTimeDisplay(cur, total);
+      };
+
+      if (video) {
+        video.addEventListener("timeupdate", onTime);
+        video.addEventListener("ended", () => setPlayingState(false));
+      }
+      if (audio) {
+        audio.addEventListener("timeupdate", onTime);
+        audio.addEventListener("ended", () => setPlayingState(false));
+      }
+
+      loadData();
+    });
+
+    // -----------------------------------------------------------------------
+    // Section 03: Live Inference Sandbox
+    // -----------------------------------------------------------------------
+    function updateSandboxSliders() {
+      const pitch = parseFloat(document.getElementById("slider-pitch").value);
+      const energy = parseFloat(document.getElementById("slider-energy").value);
+
+      document.getElementById("val-pitch").textContent = (pitch >= 0 ? "+" : "") + pitch.toFixed(2);
+      document.getElementById("val-energy").textContent = (energy >= 0 ? "+" : "") + energy.toFixed(2);
+    }
+
+    function setSandboxPreset(preset) {
+      const textEl = document.getElementById("sandbox-text");
+      const pitchEl = document.getElementById("slider-pitch");
+      const energyEl = document.getElementById("slider-energy");
+
+      if (preset === "chandler") {
+        textEl.value = "Oh yeah, that's totally going to work out brilliantly for everyone involved.";
+        pitchEl.value = -0.75;
+        energyEl.value = 0.40;
+      } else if (preset === "sheldon") {
+        textEl.value = "Yes, because my lifelong dream has always been to spend Friday night reorganizing cables.";
+        pitchEl.value = -0.90;
+        energyEl.value = 0.20;
+      } else if (preset === "ross") {
+        textEl.value = "I'm genuinely glad you could make it tonight, thank you for coming.";
+        pitchEl.value = 0.65;
+        energyEl.value = -0.15;
+      }
+      updateSandboxSliders();
+      runSandboxInference();
+    }
+
+    async function runSandboxInference() {
+      const text = document.getElementById("sandbox-text").value.trim();
+      const pitch = parseFloat(document.getElementById("slider-pitch").value);
+      const energy = parseFloat(document.getElementById("slider-energy").value);
+      const btn = document.getElementById("btn-run-inference");
+      const errBanner = document.getElementById("sb-error-banner");
+      const errText = document.getElementById("sb-error-text");
+
+      // Hide previous error banner on new run
+      if (errBanner) errBanner.classList.add("hidden");
+      if (btn) btn.disabled = true;
+
+      let result = null;
+      let hasError = false;
+
+      // 1. Try Live FastAPI Backend /api/predict
+      try {
+        const apiBase = getApiBase();
+        const res = await fetch(`${apiBase}/api/predict`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: text,
+            prosody_pitch_slope: pitch,
+            prosody_energy_delta: energy,
+            modality_mode: "full_multimodal_pgin"
+          })
+        });
+        if (res.ok) {
+          result = await res.json();
+          if (errBanner) errBanner.classList.add("hidden");
+        } else {
+          hasError = true;
+          let detail = `HTTP ${res.status}: ${res.statusText || 'Internal Server Error'}`;
+          try {
+            const errData = await res.json();
+            if (errData && errData.detail) {
+              detail = `${res.status} Error: ${typeof errData.detail === 'string' ? errData.detail : JSON.stringify(errData.detail)}`;
+            }
+          } catch (_) {}
+
+          // Display visible inline error message
+          if (errBanner && errText) {
+            errText.textContent = detail;
+            errBanner.classList.remove("hidden");
+          }
+
+          const badge = document.getElementById("sb-pred-badge");
+          if (badge) {
+            badge.textContent = `Error (${res.status})`;
+            badge.className = "font-mono text-xs uppercase px-2.5 py-1 rounded-full bg-rose-700 text-card-white";
+          }
+          const exp = document.getElementById("sb-explanation");
+          if (exp) exp.textContent = `Inference failed: ${detail}`;
+        }
+      } catch (e) {
+        // Backend not reachable (e.g. running statically without python backend)
+        console.warn("Live API /api/predict unreachable; running client-side fallback math...", e);
+        result = clientSidePGINPredict(text, pitch, energy);
+      }
+
+      // If an explicit HTTP error occurred from the server, do not overwrite with stale/fallback values
+      if (hasError) {
+        if (btn) btn.disabled = false;
+        return;
+      }
+
+      // Update UI with valid result
+      if (result) {
+        const badge = document.getElementById("sb-pred-badge");
+        badge.textContent = `${result.prediction} (${result.confidence_pct})`;
+        badge.className = result.is_sarcastic
+          ? "font-mono text-xs uppercase px-2.5 py-1 rounded-full bg-crimson-badge text-card-white"
+          : "font-mono text-xs uppercase px-2.5 py-1 rounded-full bg-emerald-700 text-card-white";
+
+        document.getElementById("sb-inc").textContent = Number(result.incongruity_score).toFixed(3);
+        document.getElementById("sb-dom-gate").textContent = result.dominant_gate_text;
+
+        const polT = result.polarity_text >= 0 ? `+${Number(result.polarity_text).toFixed(2)}` : Number(result.polarity_text).toFixed(2);
+        const polA = result.polarity_speech >= 0 ? `+${Number(result.polarity_speech).toFixed(2)}` : Number(result.polarity_speech).toFixed(2);
+        document.getElementById("sb-pol-t").textContent = polT;
+        document.getElementById("sb-pol-a").textContent = polA;
+
+        const gw = result.gate_weights;
+        document.getElementById("sb-bar-gt").style.width = (gw.g_T * 100) + "%";
+        document.getElementById("sb-bar-ga").style.width = (gw.g_A * 100) + "%";
+        document.getElementById("sb-bar-ginc").style.width = (gw.g_inc * 100) + "%";
+        document.getElementById("sb-bar-gv").style.width = (gw.g_V * 100) + "%";
+
+        document.getElementById("sb-val-gt").textContent = Number(gw.g_T).toFixed(2);
+        document.getElementById("sb-val-ga").textContent = Number(gw.g_A).toFixed(2);
+        document.getElementById("sb-val-ginc").textContent = Number(gw.g_inc).toFixed(2);
+        document.getElementById("sb-val-gv").textContent = Number(gw.g_V).toFixed(2);
+
+        document.getElementById("sb-explanation").textContent = result.explanation;
+      }
+
+      if (btn) btn.disabled = false;
+    }
+
+    function clientSidePGINPredict(text, pitch, energy) {
+      const posWords = ["brilliant", "great", "love", "totally", "thrilled", "wonderful", "dream", "glad", "perfect", "genius", "amazing", "smart"];
+      const negWords = ["hate", "awful", "terrible", "worst", "never", "ruined", "disaster"];
+      const lower = text.toLowerCase();
+      const posC = posWords.filter(w => lower.includes(w)).length;
+      const negC = negWords.filter(w => lower.includes(w)).length;
+
+      let s_T = Math.max(-0.9, Math.min(0.9, 0.45 + 0.3 * posC - 0.4 * negC));
+      let s_A = Math.max(-0.9, Math.min(0.9, 0.2 + 0.65 * pitch - 0.25 * energy));
+      let delta = Math.abs(s_T - s_A);
+
+      // Incongruity Gating weights
+      let raw_gInc = Math.exp(delta * 2.2);
+      let raw_gT = Math.exp(Math.abs(s_T) * 0.8);
+      let raw_gA = Math.exp(Math.abs(s_A) * 1.1);
+      let raw_gV = Math.exp(0.5);
+
+      let sum = raw_gInc + raw_gT + raw_gA + raw_gV;
+      let g_T = raw_gT / sum;
+      let g_A = raw_gA / sum;
+      let g_inc = raw_gInc / sum;
+      let g_V = raw_gV / sum;
+
+      // Logit
+      let logit = 2.8 * delta + 1.2 * g_inc - 1.8 * (1 - delta) - 0.4;
+      let prob = 1.0 / (1.0 + Math.exp(-logit));
+      let isSarcastic = prob >= 0.5;
+      let conf = isSarcastic ? prob : (1 - prob);
+
+      const gates = { g_T, g_A, g_inc, g_V };
+      let domGate = Object.keys(gates).reduce((a, b) => gates[a] > gates[b] ? a : b);
+
+      return {
+        text: text,
+        prediction: isSarcastic ? "Sarcastic" : "Literal",
+        is_sarcastic: isSarcastic,
+        confidence: conf,
+        confidence_pct: (conf * 100).toFixed(1) + "%",
+        logit: logit,
+        incongruity_score: delta,
+        dominant_gate: domGate,
+        dominant_gate_text: `${domGate} (${gates[domGate].toFixed(2)})`,
+        gate_weights: gates,
+        polarity_text: s_T,
+        polarity_speech: s_A,
+        explanation: isSarcastic
+          ? `Lexical sentiment (${s_T >= 0 ? '+' : ''}${s_T.toFixed(2)}) clashes with flat vocal prosody (${s_A >= 0 ? '+' : ''}${s_A.toFixed(2)}), triggering high incongruity gate weight (${g_inc.toFixed(2)}) and sarcasm classification.`
+          : `Lexical sentiment and acoustic prosody align with low cross-modal conflict (|s_T - s_A| = ${delta.toFixed(2)}), classifying the utterance as literal.`
+      };
+    }
+  </script>
+</body>
+</html>

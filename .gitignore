@@ -45,22 +45,14 @@ drive/
 .DS_Store
 Thumbs.db
 
-# Raw datasets & media files
+# Raw datasets & media files (keep heavy raw datasets out of git)
 /data/
 /data/raw/
-/data/**/*.mp4
-/data/**/*.avi
-/data/**/*.wav
-/data/**/*.mp3
-/data/**/*.flac
-*.mp4
 *.avi
-*.wav
-*.mp3
+*.flac
 
 # Cached tensors & feature representations (.pt, .pth, .npy, .npz, .h5)
 /cache/
-*.pt
 *.pth
 *.npy
 *.npz
@@ -69,11 +61,34 @@ Thumbs.db
 # Model checkpoints & training weights
 /checkpoints/
 *.ckpt
-best_model.pt
 model_weights/
 
+# Ignore general media and tensor files by default
+*.mp4
+*.wav
+*.mp3
+*.pt
+
+# Whitelist: Frontend web app assets (UI clips, demo data, icons)
+!frontend/
+!frontend/**
+!frontend/assets/clips/*.mp4
+!frontend/assets/clips/*.wav
+!frontend/assets/clips/*.jpg
+!frontend/data/demo_data.json
+
+# Whitelist: Trained champion checkpoint & ablation experimental summaries
+!results/
+!results/**
+!results/full_multimodal_pgin/
+!results/full_multimodal_pgin/best_model.pt
+!results/full_multimodal_pgin/metrics.json
+!results/ablation_summary.json
+!results/ablation_summary.csv
+!results/ablation_summary.md
+!results/*.png
+
 # Experiment results, logs, and profiling
-/results/
 /temp_results/
 /logs/
 wandb/

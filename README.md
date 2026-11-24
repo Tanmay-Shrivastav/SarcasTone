@@ -210,7 +210,7 @@ SarcasTone/
 
 ### 7.1 Local / Development Setup
 ```bash
-git clone https://github.com/your-username/SarcasTone.git
+git clone https://github.com/Tanmay-Shrivastav/SarcasTone.git
 cd SarcasTone
 python -m venv venv
 # Linux / macOS
@@ -221,7 +221,39 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 7.2 Verify Dataset Splits (Zero Leakage Check)
+### 7.2 Launch the Interactive Web Application
+Launch the live, interactive web application featuring real MUStARD sarcasm clips, live PGIN model inference, and the 8-run ablation benchmark:
+```bash
+python run_app.py
+```
+Open **`http://localhost:8000`** in your browser.
+
+To run the automated verification suite for all endpoints, assets, and checkpoints:
+```bash
+python run_app.py --test
+```
+
+### 7.3 Cloud Deployment (Render & Vercel)
+
+#### Option A: Full-Stack Deployment on Render (FastAPI + Frontend)
+Deploy the full-stack web application on Render's free tier (stays well within 512 MB RAM using the lightweight direct inference engine):
+1. Create a new **Web Service** on [Render](https://render.com) connected to your repository.
+2. Configure settings:
+   - **Environment:** `Python`
+   - **Build Command:** `pip install -r requirements-deploy.txt`
+   - **Start Command:** `uvicorn api.server:app --host 0.0.0.0 --port $PORT`
+   - **Health Check Path:** `/api/health`
+3. Render automatically binds `$PORT` and serves both the API endpoints (`/api/predict`, `/api/results`, `/api/samples`) and the editorial frontend.
+
+#### Option B: Static Frontend Deployment on Vercel
+1. Import the repository on [Vercel](https://vercel.com).
+2. Set **Root Directory** to `frontend`.
+3. To connect to an external Render backend, either:
+   - Specify `window.SARCASTONE_API_BASE = "https://your-app.onrender.com"` in `frontend/index.html`, or
+   - Pass the URL parameter in your browser: `https://your-site.vercel.app/?api=https://your-app.onrender.com`
+   - Even without an active backend, the site operates 100% interactively via the precomputed `frontend/data/demo_data.json` bundle.
+
+### 7.4 Verify Dataset Splits (Zero Leakage Check)
 Before training, verify that the dataset splits guarantee strictly zero overlap between train, validation, and test sets:
 ```bash
 python scripts/verify_splits.py --config configs/default.yaml
@@ -237,7 +269,7 @@ Run test suite:
 pytest tests/
 ```
 
-### 7.3 Run End-to-End Smoke Test (Zero Downloads Required)
+### 7.5 Run End-to-End Smoke Test (Zero Downloads Required)
 Verify model forward passes, multi-task incongruity loss, metric tracking, and all 8 ablation runs using synthetic dummy tensors and cached files:
 ```bash
 python scripts/smoke_test.py
