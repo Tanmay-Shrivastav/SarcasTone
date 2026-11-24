@@ -396,7 +396,8 @@ print("=" * 60)
 sample_0 = all_sample_ids[0]
 loaded = cache_mgr.load_sample_features(sample_0)
 
-print(f"\nTensor Inspection for sample '{sample_0}':")
+print()
+print(f"Tensor Inspection for sample '{sample_0}':")
 print(f"  text_emb    : shape {loaded['text_emb'].shape} (dtype: {loaded['text_emb'].dtype})")
 print(f"  prosody_vec : shape {loaded['prosody_vec'].shape} (dtype: {loaded['prosody_vec'].dtype})")
 print(f"  audio_emb   : shape {loaded['audio_emb'].shape} (dtype: {loaded['audio_emb'].dtype})")
@@ -405,7 +406,8 @@ print(f"  label       : {loaded['label']}")
 print(f"  audio_valid : {loaded['audio_valid']}")
 print(f"  video_valid : {loaded['video_valid']}")
 
-print("\n" + "=" * 60)
+print()
+print("=" * 60)
 print("STAGE 1 COMPLETE: All multimodal features are securely cached on Google Drive.")
 print("Proceed to: notebooks/02_train_and_evaluate_colab.ipynb to run the 8-run ablation matrix.")
 print("=" * 60)"""
@@ -469,15 +471,19 @@ import torch
 print(f"Python version : {sys.version.split()[0]}")
 print(f"PyTorch version: {torch.__version__}")
 
-assert torch.cuda.is_available(), "T4 GPU required! Select Runtime > Change runtime type > T4 GPU."
+cuda_available = torch.cuda.is_available()
+print(f"CUDA Available : {cuda_available}")
 
-device_name = torch.cuda.get_device_name(0)
-vram_bytes = torch.cuda.get_device_properties(0).total_memory
-vram_gb = vram_bytes / (1024 ** 3)
-
-print(f"✓ GPU Allocated: {device_name}")
-print(f"✓ Total VRAM   : {vram_gb:.2f} GB")
-print(f"✓ AMP Support  : fp16 autocast enabled for Colab T4 acceleration.")"""
+if cuda_available:
+    device_name = torch.cuda.get_device_name(0)
+    vram_bytes = torch.cuda.get_device_properties(0).total_memory
+    vram_gb = vram_bytes / (1024 ** 3)
+    print(f"✓ GPU Allocated: {device_name}")
+    print(f"✓ Total VRAM   : {vram_gb:.2f} GB")
+    print("✓ AMP Support  : fp16 autocast enabled for Colab T4 acceleration.")
+else:
+    print("ℹ️ GPU is not allocated. Running in CPU mode (slower).")
+    print("   To accelerate training, select Runtime > Change runtime type > T4 GPU.")"""
         ),
         markdown_cell(
 """## 3. Repository Setup & Dependencies
@@ -552,8 +558,11 @@ print("✓ Split verification passed with zero leakage across partitions.")"""
 Run `scripts/smoke_test.py` to verify forward passes, incongruity calculation, loss functions, and metrics end-to-end."""
         ),
         code_cell(
-"""# Run smoke test on GPU to verify models, loss, and metrics
-!python scripts/smoke_test.py --device cuda"""
+"""import torch
+
+# Run smoke test dynamically selecting GPU if available, else CPU
+device_arg = "cuda" if torch.cuda.is_available() else "cpu"
+!python scripts/smoke_test.py --device {device_arg}"""
         ),
         markdown_cell(
 """## 6. Execute the 8-Run Modality Ablation Matrix on T4 GPU
@@ -571,25 +580,28 @@ Live `tqdm` progress bars display ETA and throughput across the 8 runs, per-run 
         ),
         code_cell(
 """import time
+import torch
 from src.experiments.run_ablations import main as ablations_main
 
 print("=" * 75)
-print("STARTING 8-RUN MODALITY ABLATION EXPERIMENTS ON T4 GPU")
+print("STARTING 8-RUN MODALITY ABLATION EXPERIMENTS")
 print("=" * 75)
 
 t0 = time.time()
 
 # Execute all 8 runs sequentially on identical splits with live tqdm progress and ETA
+device_arg = "cuda" if torch.cuda.is_available() else "cpu"
 exit_code = ablations_main([
     "--config", str(CONFIG_PATH),
     "--results-dir", str(results_dir),
     "--splits-file", str(splits_file),
-    "--device", "cuda" if torch.cuda.is_available() else "cpu",
+    "--device", device_arg,
 ])
 
 elapsed = time.time() - t0
 assert exit_code == 0, f"run_ablations failed with exit code: {exit_code}"
-print(f"\n✓ All 8 ablation runs completed successfully in {elapsed / 60:.2f} minutes!")"""
+print()
+print(f"✓ All 8 ablation runs completed successfully in {elapsed / 60:.2f} minutes!")"""
         ),
         markdown_cell(
 """## 7. Side-by-Side Comparison Table across All 8 Runs
@@ -641,7 +653,8 @@ display(display_df)
 if "f1" in df.columns:
     best_idx = pd.to_numeric(df["f1"], errors="coerce").idxmax()
     best_row = df.iloc[best_idx]
-    print(f"\n🏆 Top Performing Model: '{best_row['run_name']}'")
+    print()
+    print(f"🏆 Top Performing Model: '{best_row['run_name']}'")
     print(f"   Modalities: {best_row['modalities']}  |  Fusion: {best_row['fusion_mode']}")
     print(f"   Accuracy  : {best_row['accuracy']:.4f}     |  Macro F1: {best_row['f1']:.4f}")"""
         ),

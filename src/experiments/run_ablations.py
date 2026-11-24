@@ -210,6 +210,7 @@ def _make_loader(
     shuffle:    bool,
     num_workers:int,
     cfg:        dict,
+    device:     Optional[torch.device] = None,
 ) -> torch.utils.data.DataLoader:
     ecfg = cfg.get("encoders", {})
     pcfg = cfg.get("prosody", {})
@@ -222,12 +223,13 @@ def _make_loader(
         prosody_dim = pcfg.get("feature_dim", 16),
         video_dim   = ecfg.get("video_hidden_dim", 2048),
     )
+    is_cuda = (device.type == "cuda") if device is not None else torch.cuda.is_available()
     return torch.utils.data.DataLoader(
         dataset,
         batch_size  = batch_size,
         shuffle     = shuffle,
         num_workers = num_workers,
-        pin_memory  = torch.cuda.is_available(),
+        pin_memory  = is_cuda,
         drop_last   = False,
     )
 
@@ -330,13 +332,13 @@ def run_single_ablation(
         test_loader  = _make_smoke_loader(8,  modalities, batch_size=4, cfg=cfg)
     else:
         train_loader = _make_loader(
-            splits["train"], cache_dir, modalities, batch_size, True,  n_workers, cfg
+            splits["train"], cache_dir, modalities, batch_size, True,  n_workers, cfg, device=device
         )
         val_loader   = _make_loader(
-            splits["val"],   cache_dir, modalities, batch_size, False, n_workers, cfg
+            splits["val"],   cache_dir, modalities, batch_size, False, n_workers, cfg, device=device
         )
         test_loader  = _make_loader(
-            splits["test"],  cache_dir, modalities, batch_size, False, n_workers, cfg
+            splits["test"],  cache_dir, modalities, batch_size, False, n_workers, cfg, device=device
         )
 
     # ---- Model & loss ------------------------------------------------------

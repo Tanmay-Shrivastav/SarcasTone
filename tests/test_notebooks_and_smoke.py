@@ -80,6 +80,8 @@ def test_notebook_02_schema_and_contents():
     assert "ablation_summary.csv" in all_source
     assert "Tanmay-Shrivastav/SarcasTone.git" in all_source
     assert "git pull" in all_source
+    assert "smoke_test.py --device {device_arg}" in all_source
+    assert "print(f\"\\n" not in all_source
 
     # Check that all 8 ablation runs are documented
     expected_runs = [
@@ -126,6 +128,7 @@ def test_tqdm_progress_bars_configuration():
     cache_mgr_src = cache_mgr_file.read_text(encoding="utf-8")
 
     # Trainer progress bars (epochs and batches) with throttling and refresh=False
+    assert "import sys" in trainer_src
     assert "from tqdm import tqdm" in trainer_src
     assert "from tqdm.auto import tqdm" in trainer_src
     assert "batch_pbar" in trainer_src
@@ -145,6 +148,7 @@ def test_tqdm_progress_bars_configuration():
     assert "mininterval=" in ablations_src
     assert "refresh=False" in ablations_src
     assert "is_tty" in ablations_src
+    assert "device.type == \"cuda\"" in ablations_src
 
     # cache_manager progress bar option
     assert "show_progress" in cache_mgr_src
