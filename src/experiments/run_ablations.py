@@ -69,7 +69,10 @@ from typing import Dict, List, Optional
 import numpy as np
 import torch
 import yaml
-from tqdm import tqdm
+try:
+    from tqdm.auto import tqdm
+except ImportError:
+    from tqdm import tqdm
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -595,17 +598,21 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # ---- Execute all runs --------------------------------------------------
     all_metrics: List[Dict] = []
+    is_tty = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 
     ablation_pbar = tqdm(
         ablation_runs,
         desc="Ablation Matrix (8 runs)",
         unit="run",
+        leave=True,
+        mininterval=1.0 if is_tty else 2.0,
+        miniters=1,
         dynamic_ncols=True,
     )
 
     for run_cfg in ablation_pbar:
         set_seed(seed)  # re-seed before every run for identical init
-        ablation_pbar.set_description(f"Ablation Matrix [{run_cfg['name']}]")
+        ablation_pbar.set_description(f"Ablation Matrix [{run_cfg['name']}]", refresh=False)
         try:
             metrics = run_single_ablation(
                 run_cfg     = run_cfg,
@@ -619,7 +626,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             all_metrics.append(metrics)
             f1_val = metrics.get("f1")
             f1_str = f"{f1_val:.4f}" if isinstance(f1_val, (int, float)) else str(f1_val)
-            ablation_pbar.set_postfix({"run": run_cfg["name"], "f1": f1_str})
+            ablation_pbar.set_postfix({"run": run_cfg["name"], "f1": f1_str}, refresh=False)
         except Exception as exc:
             logger.exception(f"Run '{run_cfg['name']}' FAILED: {exc}")
             # Record failure entry so the summary still has all rows
@@ -633,7 +640,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "f1":          None,
                 "error":       str(exc),
             })
-            ablation_pbar.set_postfix({"run": run_cfg["name"], "status": "FAILED"})
+            ablation_pbar.set_postfix({"run": run_cfg["name"], "status": "FAILED"}, refresh=False)
 
     # ---- Write consolidated outputs ----------------------------------------
     summary_rows = _build_summary_rows(all_metrics)

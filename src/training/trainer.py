@@ -40,7 +40,10 @@ import torch.nn as nn
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
-from tqdm import tqdm
+try:
+    from tqdm.auto import tqdm
+except ImportError:
+    from tqdm import tqdm
 
 from src.training.losses import SarcasmLoss
 from src.training.metrics import MetricTracker
@@ -92,6 +95,7 @@ class Trainer:
         self.grad_clip_norm = float(tcfg.get("grad_clip_norm", 1.0))
         self.use_amp        = bool(tcfg.get("use_amp", True)) and self.device.type == "cuda"
         self.show_progress  = show_progress and bool(tcfg.get("show_progress", True))
+        self.is_tty         = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 
         # ---- Optimizer & LR schedule ----------------------------------------
         self.optimizer = AdamW(
@@ -151,13 +155,20 @@ class Trainer:
         total_loss = 0.0
         n_batches  = 0
 
+        # In non-TTY streams (piped logs, background jobs), inner batch bars cause
+        # line spam because carriage returns cannot overwrite lines. Disable batch bars
+        # when not attached to a TTY, letting the outer epoch progress / logger handle progress.
+        show_batch_bar = self.show_progress and self.is_tty
+
         batch_pbar = tqdm(
             loader,
             desc=f"Epoch {epoch:2d}/{self.epochs} [Train]",
             unit="batch",
             leave=False,
+            mininterval=1.0,
+            miniters=4,
             dynamic_ncols=True,
-            disable=not self.show_progress,
+            disable=not show_batch_bar,
         )
 
         for batch in batch_pbar:
@@ -192,7 +203,8 @@ class Trainer:
             loss_val = float(loss.item())
             total_loss += loss_val
             n_batches  += 1
-            batch_pbar.set_postfix({"loss": f"{loss_val:.4f}"})
+            if show_batch_bar:
+                batch_pbar.set_postfix({"loss": f"{loss_val:.4f}"}, refresh=False)
 
         return total_loss / max(n_batches, 1)
 
@@ -210,13 +222,17 @@ class Trainer:
         self.model.eval()
         tracker = MetricTracker()
 
+        show_batch_bar = self.show_progress and self.is_tty
+
         eval_pbar = tqdm(
             loader,
             desc=desc,
             unit="batch",
             leave=False,
+            mininterval=1.0,
+            miniters=4,
             dynamic_ncols=True,
-            disable=not self.show_progress,
+            disable=not show_batch_bar,
         )
 
         for batch in eval_pbar:
@@ -245,7 +261,8 @@ class Trainer:
                 gate_weights = output.get("gate_weights"),
                 loss         = loss_val,
             )
-            eval_pbar.set_postfix({"loss": f"{loss_val:.4f}"})
+            if show_batch_bar:
+                eval_pbar.set_postfix({"loss": f"{loss_val:.4f}"}, refresh=False)
 
         return tracker.compute()
 
@@ -301,6 +318,9 @@ class Trainer:
             range(1, self.epochs + 1),
             desc=f"Training [{run_label}]",
             unit="epoch",
+            leave=True,
+            mininterval=1.0 if self.is_tty else 2.0,
+            miniters=1,
             dynamic_ncols=True,
             disable=not self.show_progress,
         )
@@ -328,7 +348,7 @@ class Trainer:
                 "val_loss": f"{val_loss:.4f}",
                 "val_f1": f"{val_f1:.4f}",
                 "best_f1": f"{best_display:.4f}",
-            })
+            }, refresh=False)
 
             logger.info(
                 f"Epoch {epoch:3d}/{self.epochs} | "

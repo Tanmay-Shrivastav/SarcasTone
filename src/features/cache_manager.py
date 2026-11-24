@@ -132,8 +132,20 @@ class FeatureCacheManager:
         if self.overwrite:
             return list(sample_ids)
         if show_progress:
-            from tqdm import tqdm
-            iterator = tqdm(sample_ids, desc="Checking cache status", unit="sample", leave=False)
+            try:
+                from tqdm.auto import tqdm
+            except ImportError:
+                from tqdm import tqdm
+            import sys
+            is_tty = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
+            iterator = tqdm(
+                sample_ids,
+                desc="Checking cache status",
+                unit="sample",
+                leave=False,
+                mininterval=1.0 if is_tty else 2.0,
+                miniters=4,
+            )
         else:
             iterator = sample_ids
         uncached = [uid for uid in iterator if not self.is_cached(uid)]

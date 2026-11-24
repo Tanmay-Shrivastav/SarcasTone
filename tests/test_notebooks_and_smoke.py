@@ -50,6 +50,8 @@ def test_notebook_01_schema_and_contents():
     assert "FeatureCacheManager" in all_source
     assert "from tqdm.auto import tqdm" in all_source
     assert "unit=\"sample\"" in all_source
+    assert "Tanmay-Shrivastav/SarcasTone.git" in all_source
+    assert "git pull" in all_source
 
 
 def test_notebook_02_schema_and_contents():
@@ -76,6 +78,8 @@ def test_notebook_02_schema_and_contents():
     assert "verify_splits" in all_source
     assert "run_ablations" in all_source
     assert "ablation_summary.csv" in all_source
+    assert "Tanmay-Shrivastav/SarcasTone.git" in all_source
+    assert "git pull" in all_source
 
     # Check that all 8 ablation runs are documented
     expected_runs = [
@@ -112,7 +116,7 @@ def test_smoke_test_script_execution():
 
 
 def test_tqdm_progress_bars_configuration():
-    """Verify that Trainer, run_ablations, and cache_manager configure clean tqdm progress bars."""
+    """Verify that Trainer, run_ablations, and cache_manager configure clean tqdm progress bars with throttling."""
     trainer_file = REPO_ROOT / "src" / "training" / "trainer.py"
     ablations_file = REPO_ROOT / "src" / "experiments" / "run_ablations.py"
     cache_mgr_file = REPO_ROOT / "src" / "features" / "cache_manager.py"
@@ -121,18 +125,26 @@ def test_tqdm_progress_bars_configuration():
     ablations_src = ablations_file.read_text(encoding="utf-8")
     cache_mgr_src = cache_mgr_file.read_text(encoding="utf-8")
 
-    # Trainer progress bars (epochs and batches)
+    # Trainer progress bars (epochs and batches) with throttling and refresh=False
     assert "from tqdm import tqdm" in trainer_src
+    assert "from tqdm.auto import tqdm" in trainer_src
     assert "batch_pbar" in trainer_src
     assert "epoch_pbar" in trainer_src
     assert "eval_pbar" in trainer_src
     assert "unit=\"epoch\"" in trainer_src
     assert "unit=\"batch\"" in trainer_src
+    assert "mininterval=" in trainer_src
+    assert "refresh=False" in trainer_src
+    assert "is_tty" in trainer_src
 
-    # run_ablations progress bar (8-run matrix)
+    # run_ablations progress bar (8-run matrix) with throttling and refresh=False
     assert "from tqdm import tqdm" in ablations_src
+    assert "from tqdm.auto import tqdm" in ablations_src
     assert "ablation_pbar" in ablations_src
     assert "unit=\"run\"" in ablations_src
+    assert "mininterval=" in ablations_src
+    assert "refresh=False" in ablations_src
+    assert "is_tty" in ablations_src
 
     # cache_manager progress bar option
     assert "show_progress" in cache_mgr_src

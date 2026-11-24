@@ -133,18 +133,25 @@ import sys
 from pathlib import Path
 
 # Candidate repository locations
+REPO_URL = "https://github.com/Tanmay-Shrivastav/SarcasTone.git"
 REPO_DIR = Path("/content/SarcasTone")
 DRIVE_REPO_DIR = Path("/content/drive/MyDrive/SarcasTone")
 
 if DRIVE_REPO_DIR.exists() and (DRIVE_REPO_DIR / "configs" / "default.yaml").exists():
     os.chdir(str(DRIVE_REPO_DIR))
     print(f"✓ Working directory set to Google Drive repository: {DRIVE_REPO_DIR}")
+    if (DRIVE_REPO_DIR / ".git").exists():
+        print("Checking for latest repository updates on Drive...")
+        !git pull origin main || git pull
 elif REPO_DIR.exists() and (REPO_DIR / "configs" / "default.yaml").exists():
     os.chdir(str(REPO_DIR))
     print(f"✓ Working directory set to: {REPO_DIR}")
+    if (REPO_DIR / ".git").exists():
+        print("Checking for latest repository updates...")
+        !git pull origin main || git pull
 else:
-    print("Cloning repository into /content/SarcasTone...")
-    !git clone https://github.com/your-username/SarcasTone.git /content/SarcasTone
+    print(f"Cloning repository from {REPO_URL} into /content/SarcasTone...")
+    !git clone https://github.com/Tanmay-Shrivastav/SarcasTone.git /content/SarcasTone
     os.chdir("/content/SarcasTone")
     print("✓ Working directory set to: /content/SarcasTone")
 
@@ -317,8 +324,15 @@ print(f"Total samples in dataset : {len(all_sample_ids)}")
 print(f"Already cached on Drive  : {len(all_sample_ids) - len(uncached_ids)}")
 print(f"Remaining to extract     : {len(uncached_ids)}")
 
-# Extraction loop with live tqdm.auto progress bar showing ETA and rate
-pbar = tqdm(uncached_ids, desc="Extracting & Caching Tensors", unit="sample")
+# Extraction loop with throttled tqdm.auto progress bar (mininterval=1.0, miniters=4)
+pbar = tqdm(
+    uncached_ids,
+    desc="Extracting & Caching Tensors",
+    unit="sample",
+    mininterval=1.0,
+    miniters=4,
+    leave=True,
+)
 for uid in pbar:
     sample = samples[uid]
 
@@ -358,7 +372,7 @@ for uid in pbar:
         },
     }
     cache_mgr.save_sample_features(uid, features)
-    pbar.set_postfix({"id": uid[:12], "label": sample.label})
+    pbar.set_postfix({"id": uid[:12], "label": sample.label}, refresh=False)
 
 # Save manifest atomically
 cache_mgr.save_manifest()
@@ -475,18 +489,25 @@ import sys
 from pathlib import Path
 
 # Candidate repository locations
+REPO_URL = "https://github.com/Tanmay-Shrivastav/SarcasTone.git"
 REPO_DIR = Path("/content/SarcasTone")
 DRIVE_REPO_DIR = Path("/content/drive/MyDrive/SarcasTone")
 
 if DRIVE_REPO_DIR.exists() and (DRIVE_REPO_DIR / "configs" / "default.yaml").exists():
     os.chdir(str(DRIVE_REPO_DIR))
     print(f"✓ Working directory: {DRIVE_REPO_DIR}")
+    if (DRIVE_REPO_DIR / ".git").exists():
+        print("Checking for latest repository updates on Drive...")
+        !git pull origin main || git pull
 elif REPO_DIR.exists() and (REPO_DIR / "configs" / "default.yaml").exists():
     os.chdir(str(REPO_DIR))
     print(f"✓ Working directory: {REPO_DIR}")
+    if (REPO_DIR / ".git").exists():
+        print("Checking for latest repository updates...")
+        !git pull origin main || git pull
 else:
-    print("Cloning repository into /content/SarcasTone...")
-    !git clone https://github.com/your-username/SarcasTone.git /content/SarcasTone
+    print(f"Cloning repository from {REPO_URL} into /content/SarcasTone...")
+    !git clone https://github.com/Tanmay-Shrivastav/SarcasTone.git /content/SarcasTone
     os.chdir("/content/SarcasTone")
     print("✓ Working directory: /content/SarcasTone")
 
